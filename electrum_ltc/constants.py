@@ -63,8 +63,8 @@ class BitcoinMainnet(AbstractNet):
     WIF_PREFIX = 0x80
     ADDRTYPE_P2PKH = 48
     ADDRTYPE_P2SH = 50
-    SEGWIT_HRP = "ltc"
-    GENESIS = "12a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2"
+    SEGWIT_HRP = "efl"
+    GENESIS = "6d39f28ad01a7edd3e2374b355cf8c7f8dbc1c5e4596ad3642fa6d10c2599217"
     DEFAULT_PORTS = {'t': '50001', 's': '50002'}
     DEFAULT_SERVERS = read_json('servers.json', {})
     CHECKPOINTS = read_json('checkpoints.json', [])
@@ -86,7 +86,7 @@ class BitcoinMainnet(AbstractNet):
         'p2wsh':       0x02aa7ed3,  # Zpub
     }
     XPUB_HEADERS_INV = inv_dict(XPUB_HEADERS)
-    BIP44_COIN_TYPE = 2
+    BIP44_COIN_TYPE = 78
     LN_REALM_BYTE = 0
     LN_DNS_SEEDS = [
         'nodes.lightning.directory.',
