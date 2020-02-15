@@ -47,10 +47,11 @@ GIT_REPO_ISSUES_URL = "https://github.com/pooler/electrum-ltc/issues"
 class AbstractNet:
 
     BLOCK_HEIGHT_FIRST_LIGHTNING_CHANNELS = 0
+    MINER_CONFIRMATION_WINDOW = 2016
 
     @classmethod
     def max_checkpoint(cls) -> int:
-        return max(0, len(cls.CHECKPOINTS) * 2016 - 1)
+        return max(0, len(cls.CHECKPOINTS) * cls.MINER_CONFIRMATION_WINDOW - 1)
 
     @classmethod
     def rev_genesis_bytes(cls) -> bytes:

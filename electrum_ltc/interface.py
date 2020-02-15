@@ -432,17 +432,17 @@ class Interface(Logger):
         return blockchain.deserialize_header(bytes.fromhex(res), height)
 
     async def request_chunk(self, height, tip=None, *, can_return_early=False):
-        index = height // 2016
+        index = height // constants.net.MINER_CONFIRMATION_WINDOW
         if can_return_early and index in self._requested_chunks:
             return
         self.logger.info(f"requesting chunk from height {height}")
-        size = 2016
+        size = constants.net.MINER_CONFIRMATION_WINDOW
         if tip is not None:
-            size = min(size, tip - index * 2016 + 1)
+            size = min(size, tip - index * constants.net.MINER_CONFIRMATION_WINDOW + 1)
             size = max(size, 0)
         try:
             self._requested_chunks.add(index)
-            res = await self.session.send_request('blockchain.block.headers', [index * 2016, size])
+            res = await self.session.send_request('blockchain.block.headers', [index * constants.net.MINER_CONFIRMATION_WINDOW, size])
         finally:
             try: self._requested_chunks.remove(index)
             except KeyError: pass
@@ -545,7 +545,7 @@ class Interface(Logger):
                     last, height = await self.step(height)
                     continue
                 self.network.trigger_callback('network_updated')
-                height = (height // 2016 * 2016) + num_headers
+                height = (height // constants.net.MINER_CONFIRMATION_WINDOW * constants.net.MINER_CONFIRMATION_WINDOW) + num_headers
                 assert height <= next_height+1, (height, self.tip)
                 last = 'catchup'
             else:
@@ -567,12 +567,12 @@ class Interface(Logger):
             # this situation resolves itself on the next block
             return 'catchup', height+1
 
-        can_connect = blockchain.can_connect(header) if 'mock' not in header else header['mock']['connect'](height)
+        can_connect = blockchain.can_connect(header, self) if 'mock' not in header else header['mock']['connect'](height)
         if not can_connect:
             self.logger.info(f"can't connect {height}")
             height, header, bad, bad_header = await self._search_headers_backwards(height, header)
             chain = blockchain.check_header(header) if 'mock' not in header else header['mock']['check'](header)
-            can_connect = blockchain.can_connect(header) if 'mock' not in header else header['mock']['connect'](height)
+            can_connect = blockchain.can_connect(header, self) if 'mock' not in header else header['mock']['connect'](height)
             assert chain or can_connect
         if can_connect:
             self.logger.info(f"could connect {height}")
@@ -647,7 +647,7 @@ class Interface(Logger):
                 checkp = True
             header = await self.get_block_header(height, 'backward')
             chain = blockchain.check_header(header) if 'mock' not in header else header['mock']['check'](header)
-            can_connect = blockchain.can_connect(header) if 'mock' not in header else header['mock']['connect'](height)
+            can_connect = blockchain.can_connect(header, self) if 'mock' not in header else header['mock']['connect'](height)
             if chain or can_connect:
                 return False
             if checkp:
